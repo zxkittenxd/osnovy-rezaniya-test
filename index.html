@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тест: основы резания и режущий инструмент — 104 вопроса</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#16203a; --muted:#67718c;
+    --line:#e2e7f2; --acc:#4353ff; --acc-soft:#eef0ff;
+    --ok:#0f9d58; --ok-soft:#e8f7ee; --bad:#e5484d; --bad-soft:#fdecec;
+    --part:#e6a700; --part-soft:#fff6d6;
+    --warn:#b7791f; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 90px;display:grid;
+        grid-template-columns:minmax(0,1fr) 280px;gap:26px;align-items:start}
+  @media(max-width:960px){.wrap{grid-template-columns:1fr}.side{position:static!important;order:-1}}
+  header.hero{grid-column:1/-1;background:linear-gradient(135deg,#2b3a8f,#4353ff 55%,#6a7bff);
+        color:#fff;border-radius:18px;padding:26px 28px;box-shadow:0 10px 30px rgba(67,83,255,.25)}
+  header.hero h1{margin:0 0 6px;font-size:26px;letter-spacing:.2px}
+  header.hero p{margin:0;opacity:.9;font-size:14.5px}
+  .chips{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);
+        border-radius:999px;padding:5px 12px;font-size:13px}
+  /* ---------- toolbar ---------- */
+  .bar{position:sticky;top:10px;z-index:30;background:rgba(244,246,251,.92);backdrop-filter:blur(8px);
+       border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin-bottom:16px;
+       display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);
+         background:#fff;color:var(--ink);padding:9px 14px;transition:.15s}
+  button:hover{border-color:#b9c1d9;transform:translateY(-1px)}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  button.primary:hover{background:#3646e6}
+  button.ghost{background:transparent}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{border:0;border-radius:0;padding:9px 12px;font-size:13.5px;background:#fff}
+  .seg button.on{background:var(--acc);color:#fff;font-weight:600}
+  .switch{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);user-select:none}
+  .switch input{width:17px;height:17px;accent-color:var(--acc)}
+  .prog{flex:1 1 140px;min-width:120px;height:8px;background:#e6eaf5;border-radius:99px;overflow:hidden}
+  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4353ff,#7c8cff);transition:width .25s}
+  .pcount{font-size:13px;color:var(--muted);min-width:74px;text-align:right}
+  /* ---------- cards ---------- */
+  .q{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+     padding:18px 20px;margin:0 0 14px;box-shadow:0 1px 2px rgba(22,32,58,.05)}
+  .q .head{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+  .num{flex:0 0 auto;min-width:34px;height:34px;border-radius:10px;background:var(--acc-soft);color:var(--acc);
+       font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px;padding:0 6px}
+  .qt{font-weight:600;font-size:16.5px}
+  .badge{display:inline-block;margin-left:8px;font-size:11.5px;font-weight:600;letter-spacing:.3px;
+         text-transform:uppercase;color:var(--muted);background:#f0f2f8;border-radius:6px;padding:2px 7px;vertical-align:2px}
+  .formula{margin:10px 0 2px;background:#0f1730;color:#e8ecff;border-radius:10px;padding:10px 16px;
+           font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:19px;text-align:center;letter-spacing:.5px}
+  .hint{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .opts{display:grid;gap:8px;margin-top:12px}
+  .opt{display:flex;gap:11px;align-items:flex-start;border:1.5px solid var(--line);border-radius:11px;
+       padding:10px 13px;cursor:pointer;transition:.13s;background:#fff}
+  .opt:hover{border-color:#aeb8d8;background:#fafbff}
+  .opt.dis{cursor:default}
+  .opt.dis:hover{border-color:var(--line);background:#fff}
+  .opt.right:hover,.opt.wrong:hover,.opt.missed:hover,.opt.part:hover{background:inherit}
+  .opt input{margin:3px 0 0;width:17px;height:17px;accent-color:var(--acc);flex:0 0 auto}
+  .opt.sel{border-color:var(--acc);background:var(--acc-soft)}
+  .opt.right{border-color:var(--ok);background:var(--ok-soft)}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+  .opt.missed{border-color:var(--ok);border-style:dashed;background:#f4fbf7}
+  .opt.part{border-color:var(--part);border-style:dashed;background:var(--part-soft)}
+  .opt .mark{margin-left:auto;font-weight:700;font-size:14px}
+  .opt.right .mark{color:var(--ok)} .opt.wrong .mark{color:var(--bad)} .opt.part .mark{color:var(--part)}
+  input.text{width:100%;font:inherit;padding:10px 13px;border:1.5px solid var(--line);border-radius:11px;margin-top:10px}
+  input.text:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(67,83,255,.15)}
+  input.text.right{border-color:var(--ok);background:var(--ok-soft)}
+  input.text.wrong{border-color:var(--bad);background:var(--bad-soft)}
+  input.text.part{border-color:var(--part);background:var(--part-soft)}
+  .acts{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+  .acts button.qcheck{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  .verdict{margin-top:10px;font-size:14px;border-radius:9px;padding:8px 12px;display:none}
+  .verdict.ok{display:block;background:var(--ok-soft);color:#0b6b3d}
+  .verdict.no{display:block;background:var(--bad-soft);color:#9b2c2f}
+  .verdict.part{display:block;background:var(--part-soft);color:#8a6400;border:1px solid #f0d382}
+  .verdict.warn{display:block;background:#fff6e5;color:#8a5b00}
+  .q.done-ok{border-color:#bfe6cd}
+  .q.done-no{border-color:#f2c4c5}
+  .q.done-part{border-color:#f0d382;background:#fffdf4}
+  /* ---------- sidebar ---------- */
+  .side{position:sticky;top:10px;background:var(--card);border:1px solid var(--line);
+        border-radius:var(--radius);padding:16px}
+  .side h3{margin:0 0 4px;font-size:15px}
+  .side .sub{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+  .nav{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+  .nav button{padding:0;height:30px;font-size:12px;border-radius:8px;background:#f2f4fa}
+  .nav button.ans{background:var(--acc-soft);border-color:#c3c9ff;color:var(--acc);font-weight:600}
+  .nav button.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
+  .nav button.no{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:700}
+  .nav button.part{background:#f5c33b;border-color:var(--part);color:#5c4300;font-weight:700}
+  .score{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;font-size:14px;display:none}
+  .score b.big{font-size:30px;display:block;line-height:1.15}
+  .grade10{display:inline-block;margin-top:6px;border-radius:8px;padding:4px 12px;font-weight:700;font-size:15px;color:#fff}
+  .legend{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.7}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+  table.crit{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+  table.crit th,table.crit td{border:1px solid var(--line);padding:3px 6px;text-align:center}
+  table.crit th{background:#f0f2f8;font-weight:600}
+  table.crit tr.hit td{background:var(--acc-soft);font-weight:700;color:var(--acc)}
+  .keys{display:none}
+  body.showkeys .keys{display:block}
+  .keys{margin-top:10px;font-size:12.5px;color:var(--muted);max-height:280px;overflow:auto;
+        border-top:1px dashed var(--line);padding-top:10px;line-height:1.7}
+  .keys b{color:var(--ink)}
+  footer{grid-column:1/-1;text-align:center;color:var(--muted);font-size:12.5px;padding-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>Основы резания и режущий инструмент</h1>
+    <p>Интерактивный тест по вашему файлу «ТК ответы (исправленный).docx» — правильные ответы взяты из жёлтых выделений.</p>
+    <div class="chips">
+      <span class="chip">104 вопроса</span>
+      <span class="chip">78 — один ответ</span>
+      <span class="chip">22 — несколько ответов</span>
+      <span class="chip">4 — дописать словами</span>
+      <span class="chip">частично верный = 0,5 балла</span>
+      <span class="chip">оценка по 10-балльной шкале</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="bar">
+      <div class="seg" id="seg">
+        <button id="modePer" class="on" title="Ответили на вопрос — сразу проверили и пошли дальше">проверка по вопросу</button>
+        <button id="modeEnd" title="Все ответы проверяются одной кнопкой в конце">проверка в конце</button>
+      </div>
+      <button class="primary" id="check" style="display:none">Проверить всё</button>
+      <button id="reset">Сбросить</button>
+      <button id="shuffle" class="ghost">Перемешать</button>
+      <label class="switch"><input type="checkbox" id="keysTgl">ключи</label>
+      <div class="prog"><i id="pbar"></i></div>
+      <span class="pcount" id="pcount">0 / 104</span>
+    </div>
+    <div id="list"></div>
+  </main>
+
+  <aside class="side">
+    <h3>Навигация</h3>
+    <div class="sub">клик — перейти к вопросу</div>
+    <div class="nav" id="nav"></div>
+    <div class="legend">
+      <div><i style="background:var(--ok)"></i>верно (1 балл)</div>
+      <div><i style="background:#f5c33b"></i>частично верно (0,5 балла)</div>
+      <div><i style="background:var(--bad)"></i>неверно (0 баллов)</div>
+    </div>
+    <div class="score" id="score"></div>
+    <h3 style="margin-top:14px">Критерии оценки</h3>
+    <table class="crit" id="crit">
+      <tr><th>% от</th><th>% до</th><th>балл</th></tr>
+    </table>
+    <div class="keys" id="keys"></div>
+  </aside>
+
+  <footer>Номера вопросов совпадают с порядком на экране и в навигации справа (подсказка на номере — номер в исходном файле). Частично верный ответ — часть правильных вариантов без неправильных (0,5 балла, жёлтый). Ответы «дописать» вводятся только словами.</footer>
+</div>
+
+<script>
+const DATA = [{"n": 1, "t": "single", "q": "1. Rx обозначается сила резания", "o": ["осевая", "тангенциальная", "вертикальная", "радиальная"], "c": [0]}, {"n": 2, "t": "single", "q": "2. Ry обозначается сила резания", "o": ["касательная", "осевая", "радиальная", "Тангенциальная"], "c": [2]}, {"n": 3, "t": "single", "q": "3. Rz обозначается сила резания", "o": ["радиальная", "горизонтальная", "осевая", "Тангенциальная"], "c": [3]}, {"n": 4, "t": "single", "q": "4. Большая часть выделяемой теплоты при резании материалов распределяется в", "o": ["станок", "режущий инструмент", "стружку", "деталь", "окружающую среду"], "c": [2]}, {"n": 5, "t": "single", "q": "5. Быстрорежущая инструментальная сталь", "o": ["9ХС", "Т15К10", "ХВСГ", "Р6М5"], "c": [3]}, {"n": 6, "t": "fill", "q": "6. В главной секущей плоскости рассматриваются углы ……", "hint": "альфа, бета, гамма, дельта", "acc": [["альфа", "бета", "гамма"]]}, {"n": 7, "t": "single", "q": "7. В основной плоскости измеряются", "o": ["углы наклона режущих кромок", "передние углы", "углы в плане", "задние вспомогательные углы"], "c": [2]}, {"n": 8, "t": "single", "q": "8. Вершина токарного резца образуется пересечением", "o": ["главной и вспомогательной режущих кромок", "задней главной и задней вспомогательной плоскостей", "плоскости резания и основной плоскости", "передней и задней главной плоскостей"], "c": [0]}, {"n": 9, "t": "multi", "q": "9. Виды отказов работы режущего инструмента", "o": ["пластическое деформирование режущей части", "изнашивание рабочих поверхностей инструмента до предельных величин износа", "нагрев режущей части", "хрупкое разрушение инструмента"], "c": [0, 1, 3]}, {"n": 10, "t": "single", "q": "10. Вся выделяемая теплота при резании материалов не распределяется в (дополнить ответ) ……", "o": ["стружку", "режущий инструмент", "станок", "окружающую среду", "деталь"], "c": [2]}, {"n": 11, "t": "single", "q": "11. Высокую химическую активность к атмосферному воздуху имеют", "o": ["чугун", "сталь", "титановые сплавы", "алюминиевые сплавы"], "c": [2]}, {"n": 12, "t": "single", "q": "12. Главная задняя поверхность расположена под углом для", "o": ["уменьшения трения о заготовку", "увеличения скорости резания", "увеличения сил трения", "уменьшения подачи"], "c": [0]}, {"n": 13, "t": "single", "q": "13. Глубина резания зависит от", "o": ["подачи", "частоты вращения шпинделя", "скорости резания", "припуска на обработку"], "c": [3]}, {"n": 14, "t": "single", "q": "14. Глубина резания измеряется в", "o": ["секундах", "миллиметрах", "минутах", "микрометрах"], "c": [1]}, {"n": 15, "t": "multi", "q": "15. Для сверления глубоких отверстий применяют", "o": ["шнековые свёрла", "пушечные свёрла", "центровочные свёрла", "спиральные свёрла"], "c": [0, 1]}, {"n": 16, "t": "multi", "q": "16. Для увеличения периода стойкости режущего инструмента, необходимо", "o": ["доводить переднюю поверхность инструмента", "уменьшить глубину резания", "улучшить механические свойства обрабатываемого материала", "увеличить подачу"], "c": [0, 1]}, {"n": 17, "t": "multi", "q": "17. Для улучшения обрабатываемости порошковых материалов применяют", "o": ["закалку", "химико-термическую обработку", "абразивные и алмазные инструменты", "СОЖ (водные, масляные, растворы электролитов)"], "c": [2, 3]}, {"n": 18, "t": "single", "q": "18. Дополнить уравнение теплового баланса Q = Qстр + Qдет + Q….. + Qокр.ср", "o": ["Qприспособления", "Qинстр", "Qстанка"], "c": [1]}, {"n": 19, "t": "single", "q": "19. Жидкими, твердыми, пластичными и газообразными бывают", "o": ["режущие инструменты", "режимы резания", "стружка", "СОТС"], "c": [3]}, {"n": 20, "t": "single", "q": "20. Зенкеры и развёртки применяют", "o": ["растачивания отверстий", "обтачивания наружных поверхностей", "окончательной обработки отверстий", "предварительной обработки отверстий"], "c": [2]}, {"n": 21, "t": "multi", "q": "21. Зенкеры применяют для обработки отверстий после", "o": ["сверления", "развёртывания", "отливки", "растачивания"], "c": [0, 2]}, {"n": 22, "t": "single", "q": "22. Значение угла наклона главной режущей кромки будет отрицательным, если", "o": ["режущая кромка токарного резца параллельна основной плоскости", "режущая кромка токарного резца перпендикулярна основной плоскости", "вершина режущего лезвия токарного резца направлена вверх", "вершина режущего лезвия токарного резца направлена вниз"], "c": [3]}, {"n": 23, "t": "single", "q": "23. Значение угла наклона главной режущей кромки будет равно нулю, если", "o": ["режущая кромка токарного резца перпендикулярна основной плоскости", "вершина режущего лезвия токарного резца направлена вниз", "режущая кромка токарного резца параллельна основной плоскости", "вершина режущего лезвия токарного резца направлена вверх"], "c": [2]}, {"n": 24, "t": "single", "q": "24. Значение угла наклона главной режущей кромкибудет положительным, если", "o": ["режущая кромка токарного резца параллельна основной плоскости", "вершина режущего лезвия токарного резца направлена вниз", "вершина режущего лезвия токарного резца направлена вверх", "режущая кромка токарного резца перпендикулярна основной плоскости"], "c": [2]}, {"n": 25, "t": "single", "q": "25. Из быстрорежущей стали Р6М5 не изготавливают", "o": ["резцы", "фрезы", "свёрла", "метчики"], "c": [0]}, {"n": 26, "t": "single", "q": "26. Искажение кристаллической решетки обработанной поверхности образуется в результате", "o": ["наклёпа", "большой подачи", "нароста", "большой скорости резания"], "c": [0]}, {"n": 27, "t": "single", "q": "27. К механическим свойствам материала относятся", "o": ["режимы резания", "магнитные свойства", "твёрдость, прочность, пластичность", "Теплопроводность"], "c": [2]}, {"n": 28, "t": "single", "q": "28. К элементам режима резания в общем случае не относится", "o": ["глубина резания", "машинное время", "подача", "скорость главного движения"], "c": [1]}, {"n": 29, "t": "single", "q": "29. Какая еще бывает форма поперечного сечения державки резца ……", "o": ["круглая", "ромбическая", "квадратная", "прямоугольная"], "c": [0]}, {"n": 30, "t": "single", "q": "30. Какое ещё контактное явление наблюдается в процессе резания ……", "o": ["диффузия", "адгезия", "адсорбция", "химическое окисление"], "c": [1]}, {"n": 31, "t": "single", "q": "31. Какое еще оказывает действие СОТС на процесс резания ……", "o": ["режущее", "упрочняющее", "защитное", "смазывающее"], "c": [2]}, {"n": 32, "t": "single", "q": "32. Какой из указанных инструментальных материалов обладает наименьшей стойкостью?", "o": ["Р9Ф5", "У12А", "Т15К6", "Р12"], "c": [1]}, {"n": 33, "t": "single", "q": "33. Легирующие элементы качество конструкционных материалов", "o": ["влияют", "ухудшают", "улучшают", "не влияют"], "c": [2]}, {"n": 34, "t": "single", "q": "34. Лезвие токарного резца не изнашивается по", "o": ["задней поверхности", "передней поверхности", "вершине", "Державке"], "c": [3]}, {"n": 35, "t": "multi", "q": "35. Марки твёрдых сплавов", "o": ["ВК6", "Р6М5", "ХВГ", "Т15К6"], "c": [0, 3]}, {"n": 36, "t": "single", "q": "36. Масляные присадки применяют при обработке", "o": ["стали", "алюминиевых сплавов", "чугуна", "титановых сплавов"], "c": [1]}, {"n": 37, "t": "fill", "q": "37. Машинное время обозначается ……", "hint": "T0 (тэ ноль)", "acc": [["t0"]]}, {"n": 38, "t": "single", "q": "38. Машинное время рассчитывается за", "o": ["одну секунду", "один проход", "один час", "одну минуту"], "c": [1]}, {"n": 39, "t": "single", "q": "39. Механизм поперечной подачи и жёсткость заготовки рассчитывают по силе", "o": ["Rx", "Rz", "Ry"], "c": [2]}, {"n": 40, "t": "single", "q": "40. Механизм продольной подачи рассчитывают по силе", "o": ["Rx", "Rz", "Ry"], "c": [0]}, {"n": 41, "t": "multi", "q": "41. На обрабатываемость алюминиевых сплавов влияют", "o": ["высокая вязкость обрабатываемого материала", "подача", "скорость резания", "коэффициент линейного расширения материала"], "c": [0, 3]}, {"n": 42, "t": "single", "q": "42. На державки токарных резцов напаивают пластинки", "o": ["легированных сталей", "углеродистых сталей", "быстрорежущих сталей", "твёрдых сплавов"], "c": [3]}, {"n": 43, "t": "single", "q": "43. На направление схода стружки влияет", "o": ["частота вращения шпинделя", "передний угол", "угол наклона главной режущей кромки", "задний угол"], "c": [2]}, {"n": 44, "t": "single", "q": "44. На обрабатываемой поверхности образуется", "o": ["подача", "ширина среза", "наклёп", "Нарост"], "c": [2]}, {"n": 45, "t": "multi", "q": "45. На обрабатываемость материалов влияют", "o": ["химический состав", "микроструктура", "стружка", "тип станка"], "c": [0, 1]}, {"n": 46, "t": "multi", "q": "46. На обрабатываемость чугунов оказывают влияние", "o": ["форма и размер аустенита и феррита", "жидкость", "перлит", "форма и размер графита и цементита"], "c": [0, 3]}, {"n": 47, "t": "multi", "q": "47. На образование стружки не влияет", "o": ["ширина среза", "толщина среза", "подача", "СОЖ"], "c": [2, 3]}, {"n": 48, "t": "multi", "q": "48. На токарном станке длинные валы закрепляют", "o": ["в тисках", "в центрах", "в токарном патроне", "в патроне и центре"], "c": [1, 3]}, {"n": 49, "t": "multi", "q": "49. На токарном станке есть два вида движения", "o": ["кручения", "вращательное", "скорость подачи", "движение подачи"], "c": [1, 3]}, {"n": 50, "t": "single", "q": "50. На токарном станке на планшайбе закрепляют заготовки", "o": ["любые", "сложной формы", "не применяют", "простой формы"], "c": [1]}, {"n": 51, "t": "multi", "q": "51. На увеличение количества тепла в зоне резания оказывают влияние", "o": ["теплопроводность обрабатываемого материала", "микроструктура обрабатываемого материала", "физико-механические свойства материала", "тип станка"], "c": [0, 1, 2]}, {"n": 52, "t": "single", "q": "52. Наиболее эффективно отводит тепло из зоны резания", "o": ["глубина резания", "вода", "СОТС", "подача"], "c": [2]}, {"n": 53, "t": "multi", "q": "53. Наибольшему износу подвергаются поверхности инструмента", "o": ["передняя поверхность", "главная режущая кромка", "задняя поверхность", "Хвостовики"], "c": [0, 1, 2]}, {"n": 54, "t": "single", "q": "54. Наибольший наклёп образуется при обработке инструментами", "o": ["малыми", "большими", "многозубыми", "однозубыми"], "c": [2]}, {"n": 55, "t": "single", "q": "55. Наибольший охлаждающий эффект оказывает", "o": ["намазыванием жидкости на инструмент", "распыленная жидкость", "намазыванием жидкости на заготовку", "подача жидкости струей"], "c": [1]}, {"n": 56, "t": "multi", "q": "56. Нарост не влияет на", "o": ["геометрию инструмента", "шероховатость поверхности", "стружку", "точность размеров"], "c": [2]}, {"n": 57, "t": "single", "q": "57. Насадные фрезы крепятся на фрезерном станке", "o": ["на оправке", "в тисках", "в цангах", "в переходных втулках"], "c": [0]}, {"n": 58, "t": "single", "q": "58. Не влияет на стойкость режущего инструмента", "o": ["частота вращения шпинделя", "подача", "глубина резания", "скорость резания"], "c": [0]}, {"n": 59, "t": "single", "q": "59. Не склонны у образованию нароста", "o": ["алюминий", "серый чугун", "белый чугун", "никель"], "c": [1]}, {"n": 60, "t": "single", "q": "60. Округление вершины резца способствует образованию", "o": ["большой скорости резания", "наклёпа", "большой подачи", "Нароста"], "c": [1]}, {"n": 61, "t": "single", "q": "61. Оксид алюминия является основой", "o": ["металлокерамических сплавов", "чугуна", "стали", "минералокерамических сплавов"], "c": [3]}, {"n": 62, "t": "single", "q": "62. Осевые инструменты изготавливают из", "o": ["ВК6", "Т10К30", "Р6М5", "У12А"], "c": [2]}, {"n": 63, "t": "single", "q": "63. Основной причиной затупления режущих инструментов является", "o": ["коробление рабочих поверхностей инструмента", "сжатие рабочих поверхностей инструмента", "трение рабочих поверхностей инструмента", "деформация рабочих поверхностей инструмента"], "c": [2]}, {"n": 64, "t": "single", "q": "64. Основной причиной износа инструмента является", "o": ["температура", "трение", "подача", "СОЖ"], "c": [1]}, {"n": 65, "t": "single", "q": "65. Основным элементом металлокерамических сплавов является", "o": ["кобальт", "карбид вольфрама", "хром", "медь"], "c": [1]}, {"n": 66, "t": "multi", "q": "66. Отжиг или отпуск применяют для улучшения обрабатываемости", "o": ["жаропрочных и жаростойких сталей", "нержавеющих сталей", "цветных материалов", "Чугуна"], "c": [0, 1]}, {"n": 67, "t": "single", "q": "67. По большому пальцу руки определяют", "o": ["направление вращения заготовки", "скорость резания", "тип резца (левый или правый)", "подачу"], "c": [2]}, {"n": 68, "t": "single", "q": "68. По этой формуле рассчитывают", "f": "v = π · D · n / 1000", "o": ["скорость резания", "частоту вращения шпинделя", "глубину резания", "Подачу"], "c": [0]}, {"n": 69, "t": "single", "q": "69. По этой формуле рассчитывают", "f": "t = D / 2", "o": ["глубину резания при сверлении", "глубину резания при рассверливании", "глубину резания при точении", "подачу"], "c": [0]}, {"n": 70, "t": "multi", "q": "70. Подача S зависит от", "o": ["СОТС", "системы СПИД", "режущего инструмента", "жесткости станка"], "c": [1, 2, 3]}, {"n": 71, "t": "single", "q": "71. Подача измеряется в", "o": ["мм/мин", "м/сек", "мм/об", "м/мин"], "c": [2]}, {"n": 72, "t": "single", "q": "72. Подачу на зуб рассчитывают для", "o": ["фрез", "долбёжных резцов", "строгальных резцов", "токарных резцов"], "c": [0]}, {"n": 73, "t": "single", "q": "73. После расчетов режимов резания подачу и частоту вращения шпинделя корректируют по", "o": ["паспорту станка", "скорости резания", "глубине резания", "машинному времени"], "c": [0]}, {"n": 74, "t": "single", "q": "74. При использовании сложных инструментов применяют СОТС", "o": ["газообразные", "жидкие", "твердые", "пластичные"], "c": [2]}, {"n": 75, "t": "single", "q": "75. При механической обработке не охлаждают инструментальный материал", "o": ["легированные стали", "быстрорежущие стали", "твёрдые сплавы", "углеродистые стали"], "c": [2]}, {"n": 76, "t": "single", "q": "76. При обработке титановых сплавов применяют СОТС", "o": ["масляные", "водные с присадками азота", "водные с присадками йода", "твёрдые"], "c": [2]}, {"n": 77, "t": "multi", "q": "77. При точении обрабатывают", "o": ["диски", "втулки", "зубья зубчатых колес", "Валы"], "c": [0, 1, 3]}, {"n": 78, "t": "single", "q": "78. Призматические заготовки на токарном станке закрепляют в", "o": ["тисках", "3-х кулачковом патроне", "4-х кулачковом патроне", "резцедержателе"], "c": [2]}, {"n": 79, "t": "multi", "q": "79. Признаки работоспособности режущего инструмента", "o": ["геометрия", "безотказность", "ремонтопригодность", "Надежность"], "c": [1, 2, 3]}, {"n": 80, "t": "single", "q": "80. Применение СОЖ", "o": ["увеличивает трение", "уменьшает подачу", "уменьшает трение", "увеличивает скорость резания"], "c": [2]}, {"n": 81, "t": "single", "q": "81. Процесс резания осуществляется", "o": ["вершиной инструмента", "передней поверхностью", "главной режущей кромкой", "главной задней поверхностью"], "c": [2]}, {"n": 82, "t": "single", "q": "82. Процесс резания проходит в", "o": ["плоскости резания", "основной плоскости", "главной секущей плоскости", "вспомогательной секущей плоскости"], "c": [0]}, {"n": 83, "t": "multi", "q": "83. Развёртки применяют для обработки отверстий после", "o": ["протягивания", "растачивания", "зенкерования", "Сверления"], "c": [2, 3]}, {"n": 84, "t": "single", "q": "84. Свёрла с коническим хвостовиком закрепляют в", "o": ["люнетах", "3-х кулачковых сверлильных патронах", "цангах", "переходных втулках"], "c": [3]}, {"n": 85, "t": "single", "q": "85. Свёрла с цилиндрическим хвостовиком закрепляют в", "o": ["3-х кулачковых сверлильных патронах", "цангах", "люнетах", "переходных втулках"], "c": [0]}, {"n": 86, "t": "single", "q": "86. Силы трения на лезвии и трущихся поверхностях являются", "o": ["источником наклепа", "источником нароста", "источником света", "источником сил резания"], "c": [3]}, {"n": 87, "t": "single", "q": "87. Сменные неперетачиваемые пластины твердых сплавов на режущем инструменте", "o": ["приваренные", "припая", "с механическим креплением", "Приклеенные"], "c": [2]}, {"n": 88, "t": "single", "q": "88. СОТС уменьшает силы ……", "o": ["касательные", "качения", "трения", "Нормальные"], "c": [2]}, {"n": 89, "t": "single", "q": "89. Спиральные свёрла применяют для сверления материалов", "o": ["вязких", "хрупких", "твердых", "Пластичных"], "c": [3]}, {"n": 90, "t": "single", "q": "90. Сплавы группы ВК применяют для обработки материалов ……", "o": ["хрупких", "вязких", "твёрдых", "пластичных"], "c": [0]}, {"n": 91, "t": "single", "q": "91. Сплавы группы ТК применяют для обработки ……", "o": ["чистовой", "обдирочной", "черновой", "промежуточной"], "c": [0]}, {"n": 92, "t": "multi", "q": "92. Сплавы группы ТТК применяют для обработки", "o": ["промежуточной", "черновой", "чистовой", "Обдирочной"], "c": [1, 3]}, {"n": 93, "t": "single", "q": "93. Стойкость режущего инструмента определяется в", "o": ["секундах", "метрах", "минутах", "часах"], "c": [2]}, {"n": 94, "t": "single", "q": "94. Тепловые явления влияют на (дополнить ответ) ……", "o": ["характер образования стружки", "величину сил резания", "нарост", "усадку стружки"], "c": [2]}, {"n": 95, "t": "multi", "q": "95. Токарные резцы относительно заготовки устанавливают относительно", "o": ["центров", "торцов", "оси заготовки", "Подачи"], "c": [2]}, {"n": 96, "t": "single", "q": "96. У отогнутого токарного резца вспомогательных режущих кромок", "o": ["одна", "три", "две", "четыре"], "c": [2]}, {"n": 97, "t": "single", "q": "97. У сверла на торце режущих кромок", "o": ["четыре", "три", "одна", "Две"], "c": [3]}, {"n": 98, "t": "fill", "q": "98. Углы в плане обозначаются ……", "hint": "фи, фи 1, эпсилон", "acc": [["фи", "фи1", "эпсилон"]]}, {"n": 99, "t": "fill", "q": "99. Угол наклона главной режущей кромки обозначается ……", "hint": "лямбда", "acc": [["лямбда"]]}, {"n": 100, "t": "single", "q": "100. Угол наклона главной режущей кромки (лямбда) находится", "o": ["между главной режущей кромкой и нормалью к основной плоскости", "между задней и главной передней поверхностями", "между вспомогательной режущей кромкой и нормалью к основной плоскости", "между передней и вспомогательной задней поверхностями"], "c": [0]}, {"n": 101, "t": "single", "q": "101. Узлы коробки скоростей и жёсткость режущего инструмента рассчитывают по силе", "o": ["Rz", "Rx", "Ry"], "c": [0]}, {"n": 102, "t": "single", "q": "102. Хвостовики режущих инструментов изготавливают их", "o": ["цветных материалов", "чугуна", "инструментальных сталей", "конструкционных сталей"], "c": [3]}, {"n": 103, "t": "single", "q": "103. Хвостовые фрезы крепятся на фрезерном станке", "o": ["в переходных втулках", "в цангах", "на оправке", "в тисках"], "c": [1]}, {"n": 104, "t": "single", "q": "104. Цельные фрезы изготавливают из", "o": ["У12А", "Р6М5", "ВК6", "Т12К6"], "c": [1]}];
+/* Критерии оценивания (10-балльная шкала) — из таблицы пользователя */
+const CRIT = [
+  [100.00,100.00,10],[95.00,99.99,9],[90.00,94.99,8],[85.00,89.99,7],[80.00,84.99,6],
+  [70.00,79.99,5],[60.00,69.99,4],[45.00,59.99,3],[40.00,44.99,2],[20.00,39.99,1],[0.00,19.99,0]
+];
+function grade10(pct){ for(const [lo,hi,b] of CRIT) if(pct>=lo-1e-9) return b; return 0; }
+const WORD_ALIAS = {'то':'t0','т0':'t0','tо':'t0','тэ0':'t0'};
+const GREEK = /[αβγδεζηθικλμνξοπρσςτυφχψωϊϋάέήίόύώἀ-῿]/;
+let order = DATA.map((_,i)=>i);
+let mode = 'per';                 // 'per' — проверка каждого вопроса сразу, 'end' — в конце
+const state = {};                 // idx -> {sel:Set, text:''}
+const done = {};                  // idx -> true (вопрос проверен)
+const results = {};               // idx -> 1 | 0.5 | 0
+const grades = {};                // idx -> 'ok' | 'part' | 'no'
+DATA.forEach((_,i)=>state[i]={sel:new Set(),text:''});
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function goTo(el){ if(el && el.scrollIntoView) el.scrollIntoView({block:'center'}); }
+function fmt(x){ return String(Math.round(x*10)/10).replace('.',','); }
+
+let POS = {};
+function repos(){ POS = {}; order.forEach((idx,k)=>POS[idx]=k+1); }
+function render(){
+  repos();
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  order.forEach(idx=>{
+    const q = DATA[idx];
+    const card = document.createElement('section');
+    card.className = 'q'; card.id = 'q'+idx;
+    const typeBadge = q.t==='single' ? 'один ответ' : q.t==='multi' ? 'несколько ответов' : 'дописать словами';
+    const qt = q.q.replace(/^\d+\.\s*/,'');          // номер показываем только бейджем
+    let inner = '<div class="head"><span class="num" title="В исходном списке — вопрос '+q.n+'">'+POS[idx]+'</span><div><div class="qt">'+esc(qt)+
+                '<span class="badge">'+typeBadge+'</span></div></div></div>';
+    if(q.f) inner += '<div class="formula">'+esc(q.f)+'</div>';
+    if(q.t==='fill'){
+      inner += '<input class="text" data-i="'+idx+'" placeholder="Введите ответ словами…" value="'+esc(state[idx].text)+'">';
+      if(q.hint) inner += '<div class="hint">Подсказка (словами): '+esc(q.hint)+'</div>';
+    }else{
+      inner += '<div class="opts">';
+      q.o.forEach((o,j)=>{
+        const sel = state[idx].sel.has(j);
+        inner += '<label class="opt'+(sel?' sel':'')+'" data-i="'+idx+'" data-j="'+j+'">'+
+                 '<input type="'+(q.t==='single'?'radio':'checkbox')+'" name="q'+idx+'"'+(sel?' checked':'')+'>'+
+                 '<span>'+esc(o)+'</span><span class="mark"></span></label>';
+      });
+      inner += '</div>';
+    }
+    inner += '<div class="acts" id="a'+idx+'"></div>';
+    inner += '<div class="verdict" id="v'+idx+'"></div>';
+    card.innerHTML = inner;
+    list.appendChild(card);
+    paintCard(idx);
+  });
+  buildNav(); buildKeys(); progress(); updateScore();
+}
+
+document.getElementById('list').addEventListener('click', e=>{
+  const qc = e.target.closest('.qcheck');
+  if(qc){ evaluate(+qc.dataset.i, true); return; }
+  const nx = e.target.closest('.nextq');
+  if(nx){ const t = nextUndone(+nx.dataset.i); if(t!==null) goTo(document.getElementById('q'+t)); return; }
+  const lab = e.target.closest('.opt');
+  if(!lab || done[+lab.dataset.i]) return;
+  const i=+lab.dataset.i, j=+lab.dataset.j, q=DATA[i];
+  if(q.t==='single') state[i].sel = new Set([j]);
+  else { state[i].sel.has(j) ? state[i].sel.delete(j) : state[i].sel.add(j); }
+  render();
+});
+document.getElementById('list').addEventListener('input', e=>{
+  if(e.target.classList.contains('text') && !done[+e.target.dataset.i]){
+    state[+e.target.dataset.i].text = e.target.value; progress();
+  }
+});
+
+/* -------- разбор текстового ответа: только словами -------- */
+function tokensOf(txt){
+  let s = txt.toLowerCase().replace(/ё/g,'е');
+  const hasSym = GREEK.test(s) || /[₀¹²³]/.test(s);
+  s = s.replace(/тэ\s+ноль/g,'t0');
+  s = s.replace(/([a-zа-я])\s+(\d)/g,'$1$2');   // «фи 1» -> «фи1»
+  s = s.replace(/фи\s*один/g,'фи1');
+  const toks = s.split(/[^a-zа-я0-9]+/i).filter(Boolean).map(t=>WORD_ALIAS[t]||t);
+  return {hasSym, toks:[...new Set(toks)]};
+}
+function fillGrade(q, txt){
+  const {hasSym, toks} = tokensOf(txt);
+  if(hasSym) return 'sym';
+  if(!toks.length) return 'no';
+  const acc = q.acc[0];
+  const allIn = toks.every(t=>acc.includes(t));
+  if(allIn && toks.length===acc.length) return 'ok';
+  if(allIn) return 'part';
+  return 'no';
+}
+function gradeOf(idx){
+  const q = DATA[idx];
+  if(q.t==='fill') return fillGrade(q, state[idx].text);
+  if(q.t==='single') return state[idx].sel.has(q.c[0]) ? 'ok' : 'no';
+  const good = new Set(q.c), sel = state[idx].sel;
+  if(sel.size===good.size && [...sel].every(j=>good.has(j))) return 'ok';
+  if(sel.size>0 && [...sel].every(j=>good.has(j))) return 'part';
+  return 'no';
+}
+function answered(idx){
+  const q = DATA[idx];
+  return q.t==='fill' ? !!state[idx].text.trim() : state[idx].sel.size>0;
+}
+function nextUndone(from){
+  const pos = order.indexOf(from);
+  const rest = order.slice(pos+1).concat(order.slice(0,pos));
+  for(const i of rest) if(!done[i]) return i;
+  return null;
+}
+
+/* -------- проверка одного вопроса -------- */
+function evaluate(idx, scrollNext, force){
+  if(done[idx]) return;
+  if(!answered(idx)){
+    const v = document.getElementById('v'+idx);
+    v.className='verdict warn'; v.innerHTML='Сначала выберите вариант или впишите ответ.';
+    return;
+  }
+  const g = gradeOf(idx);
+  if(g==='sym' && !force){
+    const v = document.getElementById('v'+idx);
+    v.className='verdict warn';
+    v.innerHTML='Ответ вводится <b>словами</b>, а не символами. Например: «альфа, бета, гамма», «лямбда».';
+    return;
+  }
+  done[idx] = true;
+  grades[idx] = (g==='sym') ? 'no' : g;
+  results[idx] = grades[idx]==='ok' ? 1 : grades[idx]==='part' ? 0.5 : 0;
+  paintCard(idx); buildNav(); updateScore();
+  if(scrollNext && mode==='per'){
+    const t = nextUndone(idx);
+    if(t!==null) goTo(document.getElementById('q'+t));
+  }
+}
+
+function paintCard(idx){
+  const q = DATA[idx], card = document.getElementById('q'+idx);
+  if(!card) return;
+  const v = document.getElementById('v'+idx), acts = document.getElementById('a'+idx);
+  if(!done[idx]){
+    acts.innerHTML = (mode==='per')
+      ? '<button class="qcheck" data-i="'+idx+'">Проверить ответ</button>' : '';
+    return;
+  }
+  acts.innerHTML = '';
+  const g = grades[idx];
+  let correctText, missing = [];
+  if(q.t==='fill'){
+    correctText = q.acc[0].join(', ');
+    const inp = card.querySelector('input.text');
+    inp.classList.add(g==='ok'?'right':g==='part'?'part':'wrong'); inp.readOnly = true;
+    if(g==='part') missing = q.acc[0].filter(t=>!tokensOf(state[idx].text).toks.includes(t));
+  }else{
+    correctText = q.c.map(j=>q.o[j]).join('; ');
+    const sel = state[idx].sel, good = new Set(q.c);
+    card.querySelectorAll('.opt').forEach(lab=>{
+      const j=+lab.dataset.j, mark=lab.querySelector('.mark');
+      lab.classList.remove('sel'); lab.classList.add('dis');
+      if(good.has(j) && sel.has(j)){ lab.classList.add('right'); mark.textContent='✓'; }
+      else if(sel.has(j)){ lab.classList.add('wrong'); mark.textContent='✕'; }
+      else if(good.has(j) && g==='part'){ lab.classList.add('part'); mark.textContent='!'; missing.push(q.o[j]); }
+      else if(good.has(j)){ lab.classList.add('missed'); mark.textContent=''; }
+      lab.querySelector('input').disabled = true;
+    });
+  }
+  card.classList.add(g==='ok'?'done-ok':g==='part'?'done-part':'done-no');
+  v.className = 'verdict '+g;
+  v.innerHTML = (g==='ok' ? '✓ Верно! (1 балл)'
+      : g==='part' ? '◐ Частично верно (0,5 балла). Не хватает: <b>'+esc(missing.join('; '))+'</b>'
+      : '✕ Неверно. Правильный ответ: <b>'+esc(correctText)+'</b>') +
+    ' <button class="nextq ghost" data-i="'+idx+'" style="padding:2px 8px;font-size:13px">следующий →</button>';
+}
+
+function progress(){
+  let a = 0; DATA.forEach((_,i)=>{ if(answered(i)) a++; });
+  document.getElementById('pbar').style.width = (a/DATA.length*100)+'%';
+  document.getElementById('pcount').textContent = a+' / '+DATA.length;
+}
+
+function buildNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  order.forEach((idx,k)=>{  // всегда 1, 2, 3 … 104; кнопка k ведёт к k-му вопросу на экране
+    const b = document.createElement('button');
+    b.textContent = k+1;
+    if(done[idx]) b.className = grades[idx]==='ok'?'ok':grades[idx]==='part'?'part':'no';
+    else if(answered(idx)) b.className = 'ans';
+    b.onclick = ()=>goTo(document.getElementById('q'+idx));
+    nav.appendChild(b);
+  });
+}
+
+function updateScore(){
+  const checkedN = Object.keys(done).length;
+  const sc = document.getElementById('score');
+  if(checkedN < DATA.length){
+    const pts = Object.values(results).reduce((s,x)=>s+x,0);
+    sc.style.display='block';
+    const lp = checkedN ? Math.round(pts/checkedN*100) : 0;
+    sc.innerHTML = 'Проверено: <b>'+checkedN+' / '+DATA.length+'</b>'+
+      (checkedN? 'Баллов: '+fmt(pts)+' из '+checkedN+' <b style="color:var(--acc)">('+lp+' %)</b>' : '');
+    highlightCrit(null);
+    return;
+  }
+  const pts = Object.values(results).reduce((s,x)=>s+x,0);
+  const full = Object.values(results).filter(x=>x===1).length;
+  const part = Object.values(results).filter(x=>x===0.5).length;
+  const zero = Object.values(results).filter(x=>x===0).length;
+  const pct = pts/DATA.length*100;
+  const g = grade10(pct);
+  const col = g>=8 ? '#0f9d58' : g>=5 ? '#b7791f' : '#e5484d';
+  const wrong=[], parts=[];
+  order.forEach((i,k)=>{ if(results[i]===0) wrong.push(k+1); else if(results[i]===0.5) parts.push(k+1); });
+  sc.style.display='block';
+  sc.innerHTML = 'Результат<b class="big">'+fmt(pts)+' / '+DATA.length+'</b>'+pct.toFixed(2)+' %'+
+    '<span class="grade10" style="background:'+col+'">Оценка: '+g+' из 10</span>'+
+    '<div class="sub" style="margin-top:8px">Верно: '+full+' · Частично: '+part+' · Неверно: '+zero+'</div>'+
+    (parts.length?'<div class="sub">Частично (жёлтые): '+parts.join(', ')+'</div>':'')+
+    (wrong.length?'<div class="sub">Ошибки: '+wrong.join(', ')+'</div>'
+                 :part?'<div class="sub">Грубых ошибок нет, но есть частичные ответы</div>'
+                 :'<div class="sub">Без ошибок 🎉</div>');
+  highlightCrit(g);
+}
+
+function highlightCrit(g){
+  document.querySelectorAll('#crit tr').forEach(tr=>tr.classList.remove('hit'));
+  if(g===null) return;
+  const row = CRIT.findIndex(([lo,hi,b])=>b===g);
+  const tr = document.querySelectorAll('#crit tr')[row+1];
+  if(tr) tr.classList.add('hit');
+}
+
+(function buildCrit(){
+  const t = document.getElementById('crit');
+  CRIT.forEach(([lo,hi,b])=>{
+    const tr = t.insertRow();
+    tr.insertCell().textContent = lo.toFixed(2);
+    tr.insertCell().textContent = hi.toFixed(2);
+    tr.insertCell().textContent = b;
+  });
+})();
+
+/* -------- режимы -------- */
+function setMode(m){
+  mode = m;
+  document.getElementById('modePer').classList.toggle('on', m==='per');
+  document.getElementById('modeEnd').classList.toggle('on', m==='end');
+  document.getElementById('check').style.display = (m==='end')?'':'none';
+  order.forEach(i=>{ if(!done[i]) paintCard(i); });
+}
+document.getElementById('modePer').onclick = ()=>setMode('per');
+document.getElementById('modeEnd').onclick = ()=>setMode('end');
+
+document.getElementById('check').onclick = ()=>{ order.forEach(i=>{ if(!done[i]) evaluate(i,false,true); }); goTo(document.getElementById('score')); };
+document.getElementById('reset').onclick = ()=>{
+  DATA.forEach((_,i)=>{ state[i]={sel:new Set(),text:''}; delete done[i]; delete results[i]; delete grades[i]; });
+  render();
+};
+document.getElementById('shuffle').onclick = ()=>{
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  DATA.forEach(q=>{
+    if(q.t==='fill') return;
+    const perm = q.o.map((_,i)=>i);
+    for(let i=perm.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[perm[i],perm[j]]=[perm[j],perm[i]];}
+    q.o = perm.map(i=>q.o[i]); q.c = q.c.map(i=>perm.indexOf(i));
+  });
+  DATA.forEach((_,i)=>{ delete done[i]; delete results[i]; delete grades[i]; });
+  render();
+};
+document.getElementById('keysTgl').onchange = e=>document.body.classList.toggle('showkeys', e.target.checked);
+function buildKeys(){
+  document.getElementById('keys').innerHTML = order.map((idx,k)=>{
+    const q = DATA[idx];
+    const a = q.t==='fill' ? q.acc[0].join(', ') : q.c.map(j=>q.o[j]).join('; ');
+    return '<div><b>'+(k+1)+'.</b> '+esc(a)+'</div>';
+  }).join('');
+}
+render();
+setMode('per');
+</script>
+</body>
+</html>
